@@ -11,6 +11,9 @@
 - Yes!
 ---
 - Is it not MD5 considered broken from a security perspective?
-- Yes and indeed it is. However, within the confines of the program and time it took to develop, it is file.
+- Yes and indeed it is. However, within the confines of the program and time it took to develop, it is fine.
+---
+- Where has this been tested on?
+- Why, Linux only of course.
 ## License
 GPL v3
