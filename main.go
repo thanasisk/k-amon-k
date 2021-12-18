@@ -9,6 +9,8 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"golang.org/x/sys/unix"
 )
 
 func getBadMD5() []string {
@@ -49,9 +51,9 @@ func main() {
 		}
 	}
 	if valid == true {
-		fmt.Println("Processing seemingly valid file %s", candidate)
+		log.Printf("Processing seemingly valid file %s", candidate)
 	} else {
-		fmt.Println("Invalid file %s", candidate)
+		log.Printf("Invalid file %s", candidate)
 		os.Exit(-2)
 	}
 	process(candidate)
@@ -72,29 +74,66 @@ func process(fname string) {
 	}
 	h := md5.New()
 	for _, f := range zf.File {
-		if strings.HasSuffix(f.Name, "JndiManager.class") {
+		// Jndi is found
+		if strings.HasSuffix(strings.ToLower(f.Name), "jndimanager.class") {
 			fc, err := f.Open()
 			if err != nil {
 				log.Fatal(err)
 			}
-			//defer f.Close()
+			defer fc.Close()
 			if _, err := io.Copy(h, fc); err != nil {
 				log.Fatal(err)
 			}
 			md5sum := h.Sum(nil)
-			fmt.Printf("%x", md5sum)
 			if hex.EncodeToString(md5sum[:]) == getGoodMD5() {
-				fmt.Printf("\n[+] Safe for now: %x\n", md5sum)
+				log.Printf("[+] Safe for now: %x\n", md5sum)
 			} else if stringInSlice(hex.EncodeToString(md5sum[:]), getBadMD5()) {
-				fmt.Printf("\n[+] Known BAD MD5 %x\n", md5sum)
+				log.Printf("[+] Known BAD MD5 %x\n", md5sum)
 			} else {
-				fmt.Printf("\n[-] UNKNOWN %x\n", md5sum)
+				log.Printf("[-] UNKNOWN %x - %s\n", md5sum, f.Name)
 			}
-
-		}
-		if strings.HasSuffix(f.Name, ".jar") {
-			process(f.Name)
+		} else if strings.HasSuffix(f.Name, ".jar") {
+			log.Printf("[+] Nested JAR found! %s", f.Name)
+			fc, err := f.Open()
+			defer fc.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+			b, err := io.ReadAll(fc)
+			tempJAR, err := memfile("tempJAR", b)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fp := fmt.Sprintf("/proc/self/fd/%d", tempJAR)
+			process(fp)
 		}
 	}
 	defer zf.Close()
+}
+
+// Hello Terin! https://terinstock.com/
+func memfile(name string, b []byte) (int, error) {
+	fd, err := unix.MemfdCreate(name, 0)
+	if err != nil {
+		return 0, fmt.Errorf("MemfdCreate: %v", err)
+	}
+
+	err = unix.Ftruncate(fd, int64(len(b)))
+	if err != nil {
+		return 0, fmt.Errorf("Ftruncate: %v", err)
+	}
+
+	data, err := unix.Mmap(fd, 0, len(b), unix.PROT_READ|unix.PROT_WRITE, unix.MAP_SHARED)
+	if err != nil {
+		return 0, fmt.Errorf("Mmap: %v", err)
+	}
+
+	copy(data, b)
+
+	err = unix.Munmap(data)
+	if err != nil {
+		return 0, fmt.Errorf("Munmap: %v", err)
+	}
+
+	return fd, nil
 }
