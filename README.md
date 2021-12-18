@@ -9,5 +9,8 @@
 ---
 - Does it support nested Zips/Jars etc?
 - Yes!
+---
+- Is it not MD5 considered broken from a security perspective?
+- Yes and indeed it is. However, within the confines of the program and time it took to develop, it is file.
 ## License
 GPL v3
