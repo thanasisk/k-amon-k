@@ -1,4 +1,13 @@
 # k-amon-k - Yet another log4j scanner
+## Quick-n-Dirty installation
+Assuming you have a *working* Go installation in your *NIX
+
+* `git clone git@github.com:thanasisk/k-amon-k.git`
+* `go get golang.org/x/sys/unix`
+* `go build`
+* `./k-amon-k foo.war`
+---
+Releases etc coming
 ## FAQ
 ---
 - What's with the name?
