@@ -14,15 +14,16 @@ Releases etc coming
 - I really like this band, if you are into metal music, make sure to support [them](https://k-amon-k.bandcamp.com/)
 ---
 - How does it work?
-- At the time of writing, log4j 2.0.17 is considered the *only* safe version, thus the only good known MD5. The utility contains known *BAD* MD5s
+- At the time of writing, log4j 2.0.17 is considered the *only* safe version, thus the only good known SHA256. The utility contains known *BAD* SHA256s for known vulnerable versions.
 ---
 - Does it support nested Zips/Jars etc?
 - Yes!
 ---
-- Is it not MD5 considered broken from a security perspective?
-- Yes and indeed it is. However, within the confines of the program and time it took to develop, it is fine.
+- Is it not MD5, that "competing" implementations use,considered broken from a security perspective?
+- Yes and indeed it is. While an attack is might not be practical, let's use SHA256.
 ---
 - Where has this been tested on?
 - Why, Linux only of course.
 ## License
 GPL v3
+
