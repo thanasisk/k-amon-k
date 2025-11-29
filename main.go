@@ -108,7 +108,8 @@ func process(fname string) {
 				log.Fatal(err)
 			}
 			defer fc.Close()
-			if _, err := io.Copy(h, fc); err != nil {
+			if _, err := io.Copy(h, fc); /* #nosec G110 */ err != nil {
+				// a specific file so no DoS likely
 				log.Fatal(err)
 			}
 			checksum := h.Sum(nil)
